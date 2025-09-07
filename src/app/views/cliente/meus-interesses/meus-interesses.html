@@ -1,0 +1,17 @@
+<div class="container">
+  <h2>Meus Imóveis de Interesse</h2>
+  <div class="imoveis-list" *ngIf="imoveis.length > 0; else noInteresses">
+    <div class="imovel-card" *ngFor="let imovel of imoveis">
+      <img [src]="imovel.imagemUrl" [alt]="imovel.titulo">
+      <div class="info">
+        <h3>{{ imovel.titulo }}</h3>
+        <p><strong>Preço:</strong> R$ {{ imovel.preco | number:'1.2-2' }}</p>
+        <p><strong>Cidade:</strong> {{ imovel.cidade }}</p>
+        <button>Ver Mais</button>
+      </div>
+    </div>
+  </div>
+  <ng-template #noInteresses>
+    <p>Você ainda não marcou nenhum imóvel como "interesse".</p>
+  </ng-template>
+</div>
