@@ -1,59 +1,132 @@
-# ImobiliariaPrime
+*Diagrama de Fluxo*
+```mermaid
+graph TD
+    A[Início: Acessar a Plataforma] --> B{Usuário logado?};
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.2.2.
+    B -- Não --> C[Acessar Páginas Públicas];
+    B -- Não --> D[Página de Login];
+    D --> E[Submeter Credenciais];
+    E --> F{Credenciais Válidas?};
+    F -- Não --> G[Exibir Mensagem de Erro];
+    F -- Sim --> H{Tipo de Usuário?};
+    H -- Corretor --> I[Redirecionar para Dashboard do Corretor];
+    H -- Cliente --> J[Redirecionar para Dashboard do Cliente];
 
-## Development server
+    B -- Sim --> K{Qual o tipo de usuário?};
+    K -- Corretor --> L[Acessar CRUD de Imóveis];
+    L --> M[Acessar Dashboard do Corretor];
+    K -- Cliente --> N[Acessar Meus Interesses];
+    N --> O[Acessar Páginas de Detalhes];
 
-To start a local development server, run:
+    P[Acessar URL Protegida] --> Q{AuthGuard};
+    Q -- Permitir --> R[Acessar Rota Protegida];
+    Q -- Negar --> S[Redirecionar para Login];
 
-```bash
-ng serve
+    T[Acessar Rota de Corretor] --> U{CorretorGuard};
+    U -- Permitir --> V[Acessar Dashboard do Corretor];
+    U -- Negar --> W[Redirecionar para Acesso Negado];
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+*Diagrama de Classes*
+```mermaid
+classDiagram
+    direction LR
+    class Usuario {
+        +id: number
+        +nome: string
+        +email: string
+        +senha: string
+        +tipo: "cliente" | "corretor"
+    }
 
-## Code scaffolding
+    class Imovel {
+        +id: number
+        +titulo: string
+        +corretorId: number
+        +tipo: string
+        +cidade: string
+        +preco: number
+        +descricao: string
+        +imagemUrl: string
+    }
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+    class Interesse {
+        +id: number
+        +clienteId: number
+        +imovelId: number
+    }
 
-```bash
-ng generate component component-name
+    class AuthService {
+        +login(email, senha): Observable<any>
+        +logout(): void
+        +isAuthenticated(): boolean
+        +getTipoUsuario(): string
+    }
+
+    class ImoveisService {
+        +getImoveis(): Observable<Imovel[]>
+        +getImovel(id): Observable<Imovel>
+        +createImovel(imovel): Observable<Imovel>
+        +updateImovel(imovel): Observable<Imovel>
+        +deleteImovel(id): Observable<any>
+    }
+
+    class InteressesService {
+        +getInteresses(clienteId): Observable<Interesse[]>
+        +addInteresse(interesse): Observable<Interesse>
+    }
+
+    class AuthGuard {
+        +canActivate(): boolean | UrlTree
+    }
+
+    class CorretorGuard {
+        +canActivate(): boolean | UrlTree
+    }
+
+    Usuario "1" -- "1..*" Imovel: cadastrou
+    Imovel "1" -- "0..*" Interesse: tem
+    Usuario "1" -- "0..*" Interesse: demonstrou
+    
+    AuthService --* AuthGuard: usa
+    AuthService --* CorretorGuard: usa
+    ImoveisService --* Imovel
+    InteressesService --* Interesse
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+*Diagrama de Casos de Uso*
+```mermaid
+classDiagram
+    direction LR
+    class Visitante
+    class Cliente
+    class Corretor
 
-```bash
-ng generate --help
+    class Publico {
+        +VisualizarImoveisDestaque()
+        +BuscarImoveis()
+        +VisualizarDetalhesImovel()
+        +CriarContaCliente()
+        +Login()
+    }
+
+    class FuncionalidadesCliente {
+        +MarcarImovelInteresse()
+        +VisualizarMeusInteresses()
+        +EditarPerfil()
+    }
+
+    class FuncionalidadesCorretor {
+        +GerenciarAnuncios()
+        +VisualizarClientesInteressados()
+    }
+
+    Visitante -- Publico
+    Cliente -- Publico
+    Cliente -- FuncionalidadesCliente
+    Corretor -- Publico
+    Corretor -- FuncionalidadesCorretor
+
+    FuncionalidadesCliente ..> Publico : <<inclui>>
+    FuncionalidadesCorretor ..> Publico : <<inclui>>
 ```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
